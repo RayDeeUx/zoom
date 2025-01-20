@@ -2,8 +2,7 @@
 	"geode": "4.0.1",
 	"gd": {
 		"win": "2.2074",
-		"mac": "2.2074",
-		"android": "2.2074"
+		"mac": "2.2074"
 	},
 	"id": "bobby_shmurner.zoom",
 	"name": "Zoooom!",
@@ -21,7 +20,7 @@
             "id": "geode.custom-keybinds",
             "version": ">=v1.6.2",
             "importance": "required",
-			"platforms": ["win", "android32", "android64"]
+			"platforms": ["win"]
         }
     ],
 	"tags": [
