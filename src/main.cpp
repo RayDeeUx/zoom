@@ -1,7 +1,5 @@
 #include <charconv>
-#ifndef GEODE_IS_MACOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
-#endif
 #include <Geode/modify/PauseLayer.hpp>
 #include <Geode/modify/CCMouseDispatcher.hpp>
 #include <Geode/modify/PlayLayer.hpp>
@@ -9,9 +7,7 @@
 #include <Geode/modify/CCScheduler.hpp>
 
 using namespace geode::prelude;
-#ifndef GEODE_IS_MACOS
 using namespace keybinds;
-#endif
 
 float clamp(float d, float min, float max) {
 	const float t = d < min ? min : d;
@@ -217,7 +213,6 @@ private:
 };
 
 class $modify(PauseLayer) {
-	#ifndef GEODE_IS_MACOS
 	void customSetup() {
 		PauseLayer::customSetup();
 		this->template addEventListener<InvokeBindFilter>([=](InvokeBindEvent* event) {
@@ -225,7 +220,6 @@ class $modify(PauseLayer) {
 			return ListenerResult::Propagate;
 		}, "toggle_menu"_spr);
 	}
-	#endif
 
 	void onResume(CCObject* sender) {
 		ZoomManager::get()->onResume();
@@ -309,7 +303,6 @@ $on_mod(Loaded) {
 		ZoomManager::get()->altDisablesZoom = enable;
 	});
 
-	#ifndef GEODE_IS_MACOS
     BindManager::get()->registerBindable({
         "toggle_menu"_spr,
         "Toggle Pause Menu",
@@ -318,5 +311,4 @@ $on_mod(Loaded) {
         "Zoom",
 		false
     });
-	#endif
 }
