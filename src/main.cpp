@@ -1,21 +1,17 @@
 #include <charconv>
-
+#ifndef GEODE_IS_MACOS
 #include <geode.custom-keybinds/include/Keybinds.hpp>
-
-#include <Geode/Geode.hpp>
-#include <Geode/loader/SettingEvent.hpp>
-
-#include <Geode/modify/MenuLayer.hpp>
+#endif
 #include <Geode/modify/PauseLayer.hpp>
-#include <Geode/modify/CCKeyboardDispatcher.hpp>
 #include <Geode/modify/CCMouseDispatcher.hpp>
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/CCEGLView.hpp>
-#include <Geode/modify/CCApplication.hpp>
 #include <Geode/modify/CCScheduler.hpp>
 
 using namespace geode::prelude;
+#ifndef GEODE_IS_MACOS
 using namespace keybinds;
+#endif
 
 float clamp(float d, float min, float max) {
 	const float t = d < min ? min : d;
@@ -43,21 +39,21 @@ public:
 	void togglePauseMenu() {
 		if (!isPaused) return;
 
-		CCNode* pauseLayer = CCScene::get()->getChildByID("PauseLayer");
+		PauseLayer* pauseLayer = CCScene::get()->getChildOfType<PauseLayer>(0);
 		if (!pauseLayer) return;
 
 		pauseLayer->setVisible(!pauseLayer->isVisible());
 	}
 
 	void setPauseMenuVisible(bool visible) {
-		CCNode* pauseLayer = CCScene::get()->getChildByID("PauseLayer");
+		PauseLayer* pauseLayer = CCScene::get()->getChildOfType<PauseLayer>(0);
 		if (!pauseLayer) return;
 
 		pauseLayer->setVisible(visible);
 	}
 
 	void setZoom(float zoom) {
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		playLayer->setScale(zoom);
@@ -65,7 +61,7 @@ public:
 	}
 
 	void zoom(float delta) {
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		CCSize contentSize = playLayer->getContentSize();
@@ -92,17 +88,16 @@ public:
 	}
 
 	void move(CCPoint delta) {
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		CCNode* playLayer = PlayLayer::get();
 		if (!playLayer) return;
 
-		CCPoint pos = playLayer->getPosition();
-		playLayer->setPosition(pos + delta);
+		playLayer->setPosition(playLayer->getPosition() + delta);
 
 		onScreenMove();
 	}
 
 	void setPos(float x, float y) {
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		playLayer->setPosition(CCPoint{ x, y });
@@ -111,7 +106,7 @@ public:
 	}
 
 	float getZoom() {
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return 1.0f;
 
 		return playLayer->getScale();
@@ -173,25 +168,17 @@ public:
 		if (!isPaused) return;
 		if (autoHideMenu) setPauseMenuVisible(false);
 
-		if (altDisablesZoom) {
-			auto kb = CCKeyboardDispatcher::get();
-			if (kb->getAltKeyPressed()) {
-				return;
-			}
-		}
+		if (altDisablesZoom && CCKeyboardDispatcher::get()->getAltKeyPressed()) return;
 
-		if (y > 0) {
-			zoom(-0.1f);
-		} else {
-			zoom(0.1f);
-		}
+		if (y > 0) zoom(-0.1f);
+		else zoom(0.1f);
 	}
 private:
 	void onScreenResize() {
 		clampPos();
 		if (!isPaused) return;
 
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		if (autoShowMenu && playLayer->getScale() == 1.0f) {
@@ -200,7 +187,7 @@ private:
 	}
 
 	void clampPos() {
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		CCPoint pos = playLayer->getPosition();
@@ -220,7 +207,7 @@ private:
 		clampPos();
 		if (!isPaused) return;
 
-		CCNode* playLayer = CCScene::get()->getChildByID("PlayLayer");
+		PauseLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		if (autoHideMenu && playLayer->getScale() != 1.0f) {
@@ -230,17 +217,15 @@ private:
 };
 
 class $modify(PauseLayer) {
+	#ifndef GEODE_IS_MACOS
 	void customSetup() {
+		PauseLayer::customSetup();
 		this->template addEventListener<InvokeBindFilter>([=](InvokeBindEvent* event) {
-			if (event->isDown()) {
-				ZoomManager::get()->togglePauseMenu();
-			}
-
+			if (event->isDown()) ZoomManager::get()->togglePauseMenu();
 			return ListenerResult::Propagate;
 		}, "toggle_menu"_spr);
-
-		PauseLayer::customSetup();
 	}
+	#endif
 
 	void onResume(CCObject* sender) {
 		ZoomManager::get()->onResume();
@@ -294,14 +279,8 @@ class $modify(CCScheduler) {
 
 class $modify(CCEGLView) {
 	void onGLFWMouseCallBack(GLFWwindow* window, int button, int action, int mods) {
-		if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
-			if (action == GLFW_PRESS) {
-				ZoomManager::get()->middleMouseDown = true;
-			}
-			else if (action == GLFW_RELEASE) {
-				ZoomManager::get()->middleMouseDown = false;
-			}
-		}
+		if (button == GLFW_MOUSE_BUTTON_MIDDLE)
+			ZoomManager::get()->middleMouseDown = (action == GLFW_PRESS);
 
 		CCEGLView::onGLFWMouseCallBack(window, button, action, mods);
 	}
@@ -314,7 +293,7 @@ class $modify(CCMouseDispatcher) {
 	}
 };
 
-$execute {
+$on_mod(Loaded) {
 	ZoomManager::get()->autoHideMenu = Mod::get()->getSettingValue<bool>("auto-hide-menu");
 	listenForSettingChanges("auto-hide-menu", +[](bool enable) {
 		ZoomManager::get()->autoHideMenu = enable;
@@ -330,7 +309,7 @@ $execute {
 		ZoomManager::get()->altDisablesZoom = enable;
 	});
 
-
+	#ifndef GEODE_IS_MACOS
     BindManager::get()->registerBindable({
         "toggle_menu"_spr,
         "Toggle Pause Menu",
@@ -339,4 +318,5 @@ $execute {
         "Zoom",
 		false
     });
+	#endif
 }
