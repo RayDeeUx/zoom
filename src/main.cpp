@@ -39,21 +39,21 @@ public:
 	void togglePauseMenu() {
 		if (!isPaused) return;
 
-		PauseLayer* pauseLayer = CCScene::get()->getChildOfType<PauseLayer>(0);
+		PauseLayer* pauseLayer = CCScene::get()->getChildByType<PauseLayer>(0);
 		if (!pauseLayer) return;
 
 		pauseLayer->setVisible(!pauseLayer->isVisible());
 	}
 
 	void setPauseMenuVisible(bool visible) {
-		PauseLayer* pauseLayer = CCScene::get()->getChildOfType<PauseLayer>(0);
+		PauseLayer* pauseLayer = CCScene::get()->getChildByType<PauseLayer>(0);
 		if (!pauseLayer) return;
 
 		pauseLayer->setVisible(visible);
 	}
 
 	void setZoom(float zoom) {
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		playLayer->setScale(zoom);
@@ -61,7 +61,7 @@ public:
 	}
 
 	void zoom(float delta) {
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		CCSize contentSize = playLayer->getContentSize();
@@ -88,7 +88,7 @@ public:
 	}
 
 	void move(CCPoint delta) {
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		playLayer->setPosition(playLayer->getPosition() + delta);
@@ -97,7 +97,7 @@ public:
 	}
 
 	void setPos(float x, float y) {
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		playLayer->setPosition(CCPoint{ x, y });
@@ -106,7 +106,7 @@ public:
 	}
 
 	float getZoom() {
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return 1.0f;
 
 		return playLayer->getScale();
@@ -178,7 +178,7 @@ private:
 		clampPos();
 		if (!isPaused) return;
 
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		if (autoShowMenu && playLayer->getScale() == 1.0f) {
@@ -187,7 +187,7 @@ private:
 	}
 
 	void clampPos() {
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		CCPoint pos = playLayer->getPosition();
@@ -207,7 +207,7 @@ private:
 		clampPos();
 		if (!isPaused) return;
 
-		PlayLayer* playLayer = CCScene::get()->getChildOfType<PlayLayer>(0);
+		PlayLayer* playLayer = CCScene::get()->getChildByType<PlayLayer>(0);
 		if (!playLayer) return;
 
 		if (autoHideMenu && playLayer->getScale() != 1.0f) {
